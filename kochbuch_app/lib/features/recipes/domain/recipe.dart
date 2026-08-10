@@ -1,5 +1,6 @@
 import 'ingredient.dart';
 
+/// Datenmodell für ein Rezept in der Kochbuch-App.
 class Recipe {
   final String title;
   final String description;
@@ -7,6 +8,7 @@ class Recipe {
   final int durationMinutes;
   final List<Ingredient> ingredients;
 
+  /// Erstellt ein Rezept; [ingredients] ist standardmässig eine leere Liste.
   const Recipe({
     required this.title,
     required this.description,

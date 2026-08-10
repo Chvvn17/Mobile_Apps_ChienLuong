@@ -4,6 +4,7 @@ import '../features/shopping/presentation/shopping_list_screen.dart';
 import '../features/info/presentation/info_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 
+/// Haupt-Scaffold mit [NavigationBar] und Verwaltung des aktiven Tabs.
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
 
@@ -14,41 +15,44 @@ class NavigationScreen extends StatefulWidget {
 class _NavigationScreenState extends State<NavigationScreen> {
   int currentIndex = 0;
 
-  final screens = const [
+  static const screens = [
     RecipeListScreen(),
     ShoppingListScreen(),
     InfoScreen(),
     ProfileScreen(),
   ];
 
+  /// Zeigt den aktiven Screen und die untere Navigationsleiste.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: screens[currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) {
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
           setState(() {
             currentIndex = index;
           });
         },
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.restaurant_menu_outlined),
+            selectedIcon: Icon(Icons.restaurant_menu),
             label: 'Rezepte',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
             label: 'Einkaufsliste',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.info_outline),
+            selectedIcon: Icon(Icons.info),
             label: 'Info',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
             label: 'Profil',
           ),
         ],

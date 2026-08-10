@@ -1,25 +1,9 @@
 import 'package:flutter/material.dart';
 import '../domain/recipe.dart';
 import '../domain/ingredient.dart';
+import 'ingredient_form.dart';
 
-const _units = ['g', 'kg', 'ml', 'l', 'Stück'];
-
-class _IngredientEntry {
-  final TextEditingController nameController;
-  final TextEditingController amountController;
-  String unit;
-
-  _IngredientEntry({String name = '', String amount = '', String unit = 'g'})
-      : nameController = TextEditingController(text: name),
-        amountController = TextEditingController(text: amount),
-        unit = unit;
-
-  void dispose() {
-    nameController.dispose();
-    amountController.dispose();
-  }
-}
-
+/// Formular zum Bearbeiten eines bestehenden Rezeptes mit vorbefüllten Feldern.
 class EditRecipeScreen extends StatefulWidget {
   final Recipe recipe;
 
@@ -35,8 +19,9 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _categoryController;
   late final TextEditingController _durationController;
-  late final List<_IngredientEntry> _ingredients;
+  late final List<IngredientEntry> _ingredients;
 
+  /// Befüllt alle Controller mit den vorhandenen Rezeptdaten.
   @override
   void initState() {
     super.initState();
@@ -52,10 +37,11 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
       final amount = i.amount % 1 == 0
           ? i.amount.toInt().toString()
           : i.amount.toString();
-      return _IngredientEntry(name: i.name, amount: amount, unit: i.unit);
+      return IngredientEntry(name: i.name, amount: amount, unit: i.unit);
     }).toList();
   }
 
+  /// Gibt alle Controller und Zutaten-Einträge frei.
   @override
   void dispose() {
     _titleController.dispose();
@@ -68,6 +54,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     super.dispose();
   }
 
+  /// Validiert das Formular, baut ein aktualisiertes [Recipe] und gibt es über [Navigator.pop] zurück.
   void _saveRecipe() {
     if (_formKey.currentState!.validate()) {
       final ingredients = _ingredients
@@ -93,131 +80,83 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     }
   }
 
-  Widget _buildIngredientRow(_IngredientEntry entry) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          SizedBox(
-            width: 60,
-            child: TextField(
-              controller: entry.amountController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Menge'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          DropdownButton<String>(
-            value: entry.unit,
-            items: _units
-                .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                .toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => entry.unit = val);
-            },
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: entry.nameController,
-              decoration: const InputDecoration(labelText: 'Zutat'),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-            onPressed: () {
-              setState(() {
-                _ingredients.remove(entry);
-                entry.dispose();
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  /// Delegiert an [buildIngredientRow] aus ingredient_form.dart.
+  Widget _buildIngredientRow(IngredientEntry entry) =>
+      buildIngredientRow(entry: entry, ingredients: _ingredients, setState: setState);
 
+  /// Baut das Formular mit vorbefüllten Feldern für das zu bearbeitende Rezept.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rezept bearbeiten'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Titel *'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Bitte einen Titel eingeben.';
-                  }
-                  return null;
-                },
+      body: Form(
+        key: _formKey,
+        child: CustomScrollView(
+          slivers: [
+            const SliverAppBar.medium(
+              title: Text('Rezept bearbeiten'),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(labelText: 'Titel *'),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Bitte einen Titel eingeben.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(labelText: 'Beschreibung *'),
+                    maxLines: 3,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Bitte eine Beschreibung eingeben.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _categoryController,
+                    decoration: const InputDecoration(labelText: 'Kategorie'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(labelText: 'Dauer (Minuten)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Zutaten',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  ..._ingredients.map(_buildIngredientRow),
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _ingredients.add(IngredientEntry());
+                      });
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Zutat hinzufügen'),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _saveRecipe,
+                    child: const Text('Speichern'),
+                  ),
+                ]),
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Beschreibung *'),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Bitte eine Beschreibung eingeben.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(labelText: 'Kategorie'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _durationController,
-                decoration:
-                    const InputDecoration(labelText: 'Dauer (Minuten)'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Zutaten',
-                style:
-                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ..._ingredients.map(_buildIngredientRow),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _ingredients.add(_IngredientEntry());
-                  });
-                },
-                icon: const Icon(Icons.add, color: Colors.orange),
-                label: const Text(
-                  'Zutat hinzufügen',
-                  style: TextStyle(color: Colors.orange),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _saveRecipe,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Speichern'),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
