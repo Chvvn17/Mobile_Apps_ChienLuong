@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Zeigt allgemeine Informationen zur App wie Name und Version.
 class InfoScreen extends StatelessWidget {
@@ -67,6 +68,46 @@ class InfoScreen extends StatelessWidget {
                         'Du kannst Rezepte ansehen, Details abrufen und deine Einkaufsliste planen.',
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text('Einträge aus Firestore',
+                      style: textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  FutureBuilder<QuerySnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('entries')
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Text('Fehler: ${snapshot.error}');
+                      }
+                      final docs = snapshot.data?.docs ?? [];
+                      if (docs.isEmpty) {
+                        return const Text('Keine Einträge gefunden.');
+                      }
+                      return Column(
+                        children: docs.map((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return Card(
+                            elevation: 0,
+                            margin: const EdgeInsets.only(bottom: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                  color: colorScheme.outlineVariant),
+                            ),
+                            child: ListTile(
+                              title: Text(data['title'] ?? ''),
+                              subtitle: Text(data['description'] ?? ''),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                 ],
