@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../domain/recipe.dart';
 import '../domain/ingredient.dart';
@@ -54,8 +55,8 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
     super.dispose();
   }
 
-  /// Validiert das Formular, baut ein aktualisiertes [Recipe] und gibt es über [Navigator.pop] zurück.
-  void _saveRecipe() {
+  /// Validiert das Formular, speichert Änderungen in Firestore und gibt das aktualisierte [Recipe] zurück.
+  Future<void> _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       final ingredients = _ingredients
           .where((e) => e.nameController.text.trim().isNotEmpty)
@@ -67,6 +68,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
           .toList();
 
       final updatedRecipe = Recipe(
+        id: widget.recipe.id,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _categoryController.text.trim().isEmpty
@@ -76,7 +78,25 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
             int.tryParse(_durationController.text.trim()) ?? 0,
         ingredients: ingredients,
       );
-      Navigator.pop(context, updatedRecipe);
+
+      await FirebaseFirestore.instance
+          .collection('recipes')
+          .doc(widget.recipe.id)
+          .update({
+            'title': updatedRecipe.title,
+            'description': updatedRecipe.description,
+            'category': updatedRecipe.category,
+            'durationMinutes': updatedRecipe.durationMinutes,
+            'ingredients': updatedRecipe.ingredients
+                .map((i) => {
+                      'name': i.name,
+                      'amount': i.amount,
+                      'unit': i.unit,
+                    })
+                .toList(),
+          });
+
+      if (mounted) Navigator.pop(context, updatedRecipe);
     }
   }
 

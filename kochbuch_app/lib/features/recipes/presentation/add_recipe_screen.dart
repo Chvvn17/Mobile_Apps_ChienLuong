@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../domain/recipe.dart';
 import '../domain/ingredient.dart';
@@ -32,8 +33,8 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     super.dispose();
   }
 
-  /// Validiert das Formular, baut ein [Recipe]-Objekt und gibt es über [Navigator.pop] zurück.
-  void _saveRecipe() {
+  /// Validiert das Formular, speichert in Firestore und gibt das neue [Recipe] zurück.
+  Future<void> _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       final ingredients = _ingredients
           .where((e) => e.nameController.text.trim().isNotEmpty)
@@ -44,16 +45,37 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               ))
           .toList();
 
+      final category = _categoryController.text.trim().isEmpty
+          ? 'Sonstiges'
+          : _categoryController.text.trim();
+
+      final docRef = await FirebaseFirestore.instance
+          .collection('recipes')
+          .add({
+            'title': _titleController.text.trim(),
+            'description': _descriptionController.text.trim(),
+            'category': category,
+            'durationMinutes':
+                int.tryParse(_durationController.text.trim()) ?? 0,
+            'ingredients': ingredients
+                .map((i) => {
+                      'name': i.name,
+                      'amount': i.amount,
+                      'unit': i.unit,
+                    })
+                .toList(),
+          });
+
       final newRecipe = Recipe(
+        id: docRef.id,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        category: _categoryController.text.trim().isEmpty
-            ? 'Sonstiges'
-            : _categoryController.text.trim(),
+        category: category,
         durationMinutes: int.tryParse(_durationController.text.trim()) ?? 0,
         ingredients: ingredients,
       );
-      Navigator.pop(context, newRecipe);
+
+      if (mounted) Navigator.pop(context, newRecipe);
     }
   }
 

@@ -3,6 +3,7 @@ import '../domain/ingredient.dart';
 
 const mockRecipes = [
   Recipe(
+    id: '',
     title: 'Spaghetti Carbonara',
     description: 'Klassische italienische Pasta mit Ei, Speck und Parmesan.',
     category: 'Pasta',
@@ -15,6 +16,7 @@ const mockRecipes = [
     ],
   ),
   Recipe(
+    id: '',
     title: 'Gemüsesuppe',
     description: 'Einfache Suppe mit Karotten, Sellerie und Kartoffeln.',
     category: 'Suppe',
@@ -27,6 +29,7 @@ const mockRecipes = [
     ],
   ),
   Recipe(
+    id: '',
     title: 'Pfannkuchen',
     description: 'Einfache Pfannkuchen mit Mehl, Ei und Milch.',
     category: 'Frühstück',
@@ -39,6 +42,7 @@ const mockRecipes = [
     ],
   ),
   Recipe(
+    id: '',
     title: 'Avocado Toast',
     description: 'Geröstetes Brot mit Avocado, Salz und Zitronensaft.',
     category: 'Frühstück',
@@ -50,6 +54,7 @@ const mockRecipes = [
     ],
   ),
   Recipe(
+    id: '',
     title: 'Tomatensalat',
     description: 'Frischer Salat mit Tomaten, Basilikum und Olivenöl.',
     category: 'Salat',

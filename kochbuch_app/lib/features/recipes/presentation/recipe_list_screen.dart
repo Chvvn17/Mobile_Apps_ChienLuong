@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import '../data/recipe_mock_data.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import '../domain/ingredient.dart';
 import '../domain/recipe.dart';
 import 'recipe_detail_screen.dart';
 import 'add_recipe_screen.dart';
@@ -13,11 +14,50 @@ class RecipeListScreen extends StatefulWidget {
 }
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
-  final List<Recipe> _recipes = List.from(mockRecipes);
+  bool _isLoading = true;
+  List<Recipe> _recipes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecipes();
+  }
+
+  Future<void> _loadRecipes() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('recipes').get();
+    setState(() {
+      _recipes = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final ingredientsData = (data['ingredients'] as List<dynamic>? ?? []);
+        return Recipe(
+          id: doc.id,
+          title: data['title'] ?? '',
+          description: data['description'] ?? '',
+          category: data['category'] ?? 'Sonstiges',
+          durationMinutes: (data['durationMinutes'] as num?)?.toInt() ?? 0,
+          ingredients: ingredientsData
+              .map((i) => Ingredient(
+                    name: i['name'] ?? '',
+                    amount: (i['amount'] as num?)?.toDouble() ?? 0,
+                    unit: i['unit'] ?? '',
+                  ))
+              .toList(),
+        );
+      }).toList();
+      _isLoading = false;
+    });
+  }
 
   /// Baut die Rezeptliste mit [SliverAppBar] und FAB zum Hinzufügen neuer Rezepte.
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -93,6 +133,10 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                         if (result is Recipe) {
                           setState(() => _recipes[index] = result);
                         } else if (result == 'delete') {
+                          await FirebaseFirestore.instance
+                              .collection('recipes')
+                              .doc(recipe.id)
+                              .delete();
                           setState(() => _recipes.removeAt(index));
                         }
                       },

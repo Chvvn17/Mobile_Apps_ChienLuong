@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../domain/recipe.dart';
 import 'edit_recipe_screen.dart';
 
@@ -37,7 +38,13 @@ class RecipeDetailScreen extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline),
-                onPressed: () => Navigator.pop(context, 'delete'),
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('recipes')
+                      .doc(recipe.id)
+                      .delete();
+                  if (context.mounted) Navigator.pop(context, 'delete');
+                },
               ),
             ],
           ),
