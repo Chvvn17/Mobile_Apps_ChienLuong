@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../data/recipes_collection.dart';
 import '../domain/recipe.dart';
 import '../domain/ingredient.dart';
 import 'ingredient_form.dart';
@@ -79,10 +79,7 @@ class _EditRecipeScreenState extends State<EditRecipeScreen> {
         ingredients: ingredients,
       );
 
-      await FirebaseFirestore.instance
-          .collection('recipes')
-          .doc(widget.recipe.id)
-          .update({
+      await recipesCollection().doc(widget.recipe.id).update({
             'title': updatedRecipe.title,
             'description': updatedRecipe.description,
             'category': updatedRecipe.category,

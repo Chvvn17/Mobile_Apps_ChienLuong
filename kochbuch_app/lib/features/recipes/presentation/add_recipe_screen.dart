@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../data/recipes_collection.dart';
 import '../domain/recipe.dart';
 import '../domain/ingredient.dart';
 import 'ingredient_form.dart';
@@ -49,9 +49,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           ? 'Sonstiges'
           : _categoryController.text.trim();
 
-      final docRef = await FirebaseFirestore.instance
-          .collection('recipes')
-          .add({
+      final docRef = await recipesCollection().add({
             'title': _titleController.text.trim(),
             'description': _descriptionController.text.trim(),
             'category': category,

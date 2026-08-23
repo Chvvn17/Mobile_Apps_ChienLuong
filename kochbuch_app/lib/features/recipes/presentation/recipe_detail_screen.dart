@@ -1,5 +1,5 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../data/recipes_collection.dart';
 import '../domain/recipe.dart';
 import 'edit_recipe_screen.dart';
 
@@ -39,10 +39,7 @@ class RecipeDetailScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () async {
-                  await FirebaseFirestore.instance
-                      .collection('recipes')
-                      .doc(recipe.id)
-                      .delete();
+                  await recipesCollection().doc(recipe.id).delete();
                   if (context.mounted) Navigator.pop(context, 'delete');
                 },
               ),

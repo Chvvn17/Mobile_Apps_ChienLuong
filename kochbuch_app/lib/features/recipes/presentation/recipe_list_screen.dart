@@ -1,5 +1,5 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../data/recipes_collection.dart';
 import '../domain/ingredient.dart';
 import '../domain/recipe.dart';
 import 'recipe_detail_screen.dart';
@@ -24,8 +24,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   }
 
   Future<void> _loadRecipes() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('recipes').get();
+    final snapshot = await recipesCollection().get();
     setState(() {
       _recipes = snapshot.docs.map((doc) {
         final data = doc.data();
@@ -133,10 +132,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                         if (result is Recipe) {
                           setState(() => _recipes[index] = result);
                         } else if (result == 'delete') {
-                          await FirebaseFirestore.instance
-                              .collection('recipes')
-                              .doc(recipe.id)
-                              .delete();
+                          await recipesCollection().doc(recipe.id).delete();
                           setState(() => _recipes.removeAt(index));
                         }
                       },
