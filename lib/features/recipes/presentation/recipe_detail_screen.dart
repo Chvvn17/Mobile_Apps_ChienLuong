@@ -1,7 +1,17 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../data/recipes_collection.dart';
 import '../domain/recipe.dart';
 import 'edit_recipe_screen.dart';
+
+String formatDuration(int minutes) {
+  return Intl.plural(
+    minutes,
+    one: '1 Minute',
+    other: '$minutes Minuten',
+    locale: 'de',
+  );
+}
 
 /// Zeigt die vollständige Detailansicht eines einzelnen Rezeptes.
 class RecipeDetailScreen extends StatelessWidget {
@@ -71,7 +81,7 @@ class RecipeDetailScreen extends StatelessWidget {
                         Icon(Icons.timer_outlined,
                             color: colorScheme.onPrimaryContainer, size: 18),
                         const SizedBox(width: 6),
-                        Text('${recipe.durationMinutes} Minuten',
+                        Text(formatDuration(recipe.durationMinutes),
                             style: TextStyle(
                                 color: colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w500)),

@@ -100,15 +100,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
-                      leading: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          'assets/images/placeholder.png',
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
                         ),
-                        child: Icon(Icons.restaurant_menu,
-                            color: colorScheme.onPrimaryContainer),
                       ),
                       title: Text(
                         recipe.title,
